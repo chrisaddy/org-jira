@@ -434,12 +434,20 @@ request.el, so if at all possible, it should be avoided."
 				   (format "rest/agile/1.0/sprint/%d/issue" (first params))
 				   'issues
 				   (cdr params)))
-      ('getIssuesFromJqlSearch  (append (cdr ( assoc 'issues (jiralib--rest-call-it
-                                                              "/rest/api/2/search"
-                                                              :type "POST"
-                                                              :data (json-encode `((jql . ,(first params))
-                                                                                   (maxResults . ,(second params)))))))
-                                        nil))
+      ('getIssuesFromJqlSearch
+       (let* ((response
+               (jiralib--rest-call-it
+                "/rest/api/3/search/jql"
+                :type "POST"
+                :data (json-encode `((queries . [((query . ,(first params)))])
+                                     (maxResults . ,(second params))))))
+              (results (cdr (assoc 'searchResults response)))
+              (first-result (cond
+                             ((vectorp results) (aref results 0))
+                             ((listp results) (car results))
+                             (t nil)))
+              (issues (and first-result (cdr (assoc 'issues first-result)))))
+         (append issues nil)))
       ('getPriorities (jiralib--rest-call-it
                        "/rest/api/2/priority"))
       ('getProjects (jiralib--rest-call-it "rest/api/2/project"))

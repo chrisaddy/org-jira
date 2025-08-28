@@ -17,11 +17,14 @@ GET :url/rest/api/2/issue/:project-2
 #
 
 # Get search of issues
-POST :url/rest/api/2/search
+POST :url/rest/api/3/search/jql
 Content-Type: application/json
 :auth
 {
-  "maxResults": "2"
+  "queries": [
+    {"query": "id = TEST-1"}
+  ],
+  "maxResults": 2
 }
 #
 
